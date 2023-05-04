@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 
 export default function Crawl() {
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -33,14 +34,7 @@ export default function Crawl() {
       "Crawling has started. Please come back and check the results in a few minutes. "
     );
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/crawl`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, url }),
-      });
-      const results = await res.json();
+      const results = await axios.post(`api/crawl`, { name, url });
       if (results.data) {
         toast.success("Crawling has finished.");
       }

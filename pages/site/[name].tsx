@@ -15,9 +15,11 @@ let defaultMessages = [
 
 let messages = [...defaultMessages];
 
-export default function Home({ name }: any) {
+export default function Home() {
   // @ts-ignore
   const router = useRouter();
+  const name = router.query.name;
+
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   function changeDefaultMessages(newContent: string) {

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useSession, signIn, signOut } from "next-auth/react";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,10 +20,13 @@ interface HomeProps {
   sites: string[];
 }
 
-export default function Home({ sites }: HomeProps) {
+export default function Home() {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [site, setSite] = useState(sites[0]);
+  const [sites, setSites] = useState([]);
+
+  const [site, setSite] = useState(sites?.length > 0 ? sites[0] : []);
 
   function changeDefaultMessages(newContent: string) {
     defaultMessages[0].content = newContent;
@@ -184,50 +189,13 @@ export default function Home({ sites }: HomeProps) {
     });
   }
 
-  const handleFormSubmit = (e: any) => {
-    e.preventDefault();
-    if (submitting) {
-      return;
-    }
-    // @ts-ignore
-    const message = document.getElementById("question-input").value;
-    // input validation
-    if (!message) {
-      return alert("Please enter your question");
-    }
-    setSubmitting(true);
-    try {
-      // call the function that handles the fetch request to our backend
-      handleSubmitMessage(message).then((response) => {
-        // add the chatbot's response to the DOM when the fetch request is complete
-        addBotMessageToDialogueBox(response?.data || null);
-        setSubmitting(false);
+  useEffect(() => {
+    new Promise((resolve) => {
+      axios.get("/api/list").then((res) => {
+        setSites(res.data.sites);
       });
-    } catch (ex) {
-      setSubmitting(false);
-    }
-  };
-
-  const handleSelectChange = (value: string) => {
-    setSite(value);
-    messages = [...defaultMessages];
-    // @ts-ignore
-    document.getElementById(
-      "dialogue"
-    ).innerHTML = `<li class="bg-gray-100 rounded p-2 w-fit self-start break-words">
-    Hi there 👋 I can help you with your questions!
-  </li>`;
-    // clear the input for the next response
-    // @ts-ignore
-    document.getElementById("question-input").value = "";
-    // @ts-ignore
-    document.getElementById("scrollArea").scroll({
-      // @ts-ignore
-      top: document.getElementById("scrollArea").scrollHeight,
-      behavior: "smooth",
     });
-  };
-
+  }, []);
   return (
     <div id="root" className="flex flex-col min-h-screen p-16">
       <ToastContainer />
@@ -256,10 +224,22 @@ export default function Home({ sites }: HomeProps) {
             <span className="sr-only">Loading...</span>
           </div>
         )}
-        {!loading && (
+        {!loading && !session && (
+          <div className="text-center text-2xl mt-0 font-bold mb-4">
+            <button
+              onClick={() => {
+                signIn();
+              }}
+            >
+              Sign In
+            </button>
+          </div>
+        )}
+
+        {!loading && session && (
           <div className="text-center text-2xl mt-0 font-bold mb-4">
             <div className="flex flex-col">
-              {sites.map((x) => {
+              {sites?.map((x) => {
                 return (
                   <Link
                     href={`/site/${x}`}
@@ -274,32 +254,25 @@ export default function Home({ sites }: HomeProps) {
           </div>
         )}
 
-        <br />
-        <div>
-          <Link
-            href="/crawl"
-            className="text-blue-500"
-            style={{ marginRight: "15px" }}
-          >
-            Crawl Webpage
-          </Link>
+        {session && (
+          <>
+            <br />
+            <div>
+              <Link
+                href="/crawl"
+                className="text-blue-500"
+                style={{ marginRight: "15px" }}
+              >
+                Crawl Webpage
+              </Link>
 
-          <Link href="/file" className="text-blue-500">
-            Upload File Example
-          </Link>
-        </div>
+              <Link href="/file" className="text-blue-500">
+                Upload File Example
+              </Link>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
-}
-
-export async function getServerSideProps() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const res = await fetch(`${apiUrl}/api/list`);
-  const data = await res.json();
-  return {
-    props: {
-      sites: data?.sites || [],
-    },
-  };
 }

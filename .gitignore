@@ -36,3 +36,5 @@ next-env.d.ts
 
 storage
 .env.prod
+.env
+.env.prod

@@ -109,9 +109,9 @@ export default async function handler(
     environment: "asia-northeast1-gcp",
     apiKey: process.env.PINECONE_KEY as string,
   });
-  // console.log("initializing crawling...");
+  console.log("initializing crawling...");
   const crawlerResults = await crawler.run([url]);
-  // console.log("crawling done", crawlerResults);
+  console.log("crawling done", crawlerResults);
   const localDataset = await Dataset.open(new URL(url).hostname);
   const localData = await localDataset.getData();
   const promises = [] as any[];

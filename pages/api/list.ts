@@ -2,12 +2,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import NextCors from "nextjs-cors";
 import { PineconeClient, ScoredVector } from "@pinecone-database/pinecone";
+import { getServerSession } from "next-auth/next";
+
+import { authOptions } from "./auth/[...nextauth]";
+
 const pinecone = new PineconeClient();
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const session = await getServerSession(req, res, authOptions);
+  console.log("test", session);
   await NextCors(req, res, {
     // Options
     methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
