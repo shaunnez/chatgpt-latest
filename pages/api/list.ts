@@ -12,6 +12,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // @ts-ignore
   const session = await getServerSession(req, res, authOptions);
   console.log("test", session);
   await NextCors(req, res, {

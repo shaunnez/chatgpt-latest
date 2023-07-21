@@ -38,3 +38,5 @@ storage
 .env.prod
 .env
 .env.prod
+.env.prod
+.vercel

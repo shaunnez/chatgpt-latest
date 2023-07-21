@@ -269,6 +269,10 @@ export default function Home() {
               <Link href="/file" className="text-blue-500">
                 Upload File Example
               </Link>
+
+              <Link href="/briefing-tool" className="text-blue-500">
+                Briefing tool
+              </Link>
             </div>
           </>
         )}

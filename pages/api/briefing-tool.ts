@@ -13,23 +13,6 @@ const openai = new OpenAIApi(
   })
 );
 
-async function queryIndex(
-  pinecone: any,
-  namespace: string,
-  embedding: any
-): Promise<ScoredVector[]> {
-  const index = pinecone.Index("openai");
-  const queryRequest = {
-    vector: embedding,
-    topK: 3,
-    includeValues: false,
-    includeMetadata: true,
-    namespace: namespace,
-  };
-  const results = await index.query({ queryRequest });
-  return results.matches || [];
-}
-
 type Data = {
   status: string;
   data: any;
@@ -65,29 +48,9 @@ export default async function handler(
 
     const lastQuestion = messages[messages.length - 1].content;
     console.log("query index : " + name + ". Question: " + lastQuestion);
-    // get embeddings value for prompt question
-    const promptEmbeddingsResponse = await openai.createEmbedding({
-      model: "text-embedding-ada-002",
-      input: lastQuestion,
-    });
 
-    const queryResults = await queryIndex(
-      pinecone,
-      name,
-      promptEmbeddingsResponse.data.data[0].embedding
-    );
-    console.log("Retrieved results: " + queryResults.length);
-    if (queryResults.length === 0) {
-      // return an error response to the client
-      return res.json({
-        status: "error",
-        data: null,
-        message: "No valid response from OpenAI",
-      });
-    }
     // @ts-ignore
-    const finalPrompt = `Info: ${queryResults[0].metadata.content}
-      Question: ${lastQuestion}
+    const finalPrompt = `Question: ${lastQuestion}
       Answer: 
   `;
 
@@ -122,7 +85,7 @@ export default async function handler(
         messages,
         message: "",
         // @ts-ignore
-        domain: queryResults ? queryResults.id : "",
+        // domain: queryResults ? queryResults.id : "",
       },
     });
   } catch (ex) {
